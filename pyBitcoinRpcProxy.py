@@ -1,7 +1,6 @@
 import base64
 import time
 import socket  # Import socket module
-import argparse
 
 import argumentParser
 
@@ -21,18 +20,12 @@ parser.add_argument("--password", help="Bitcoin RPC password", required=True, na
 parser.add_argument("--port", help="Bitcoin RPC port (8332)", default=8332, action="store_true")
 parser.add_argument("--webport", help="Proxy web port (8330)", default=8330, action="store_true")
 
-try:
-    args = parser.parse_args()
-except argparse.ArgumentError as exc:
-    print(exc.message, '\n', exc.argument)
-    exit()
+args = parser.parse_args()
 
 bitcoinrpc_port = args.port
 bitcoinrpc_webport = args.webport
 bitcoinrpc_username = args.username[0]
 bitcoinrpc_password = args.password[0]
-print(bitcoinrpc_username)
-print(bitcoinrpc_password)
 
 # This is the server
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # Create a socket object
@@ -155,9 +148,3 @@ while True:
 
     # Session done
     print("Connection closed")
-
-
-def usage():
-    exit()
-
-
