@@ -42,6 +42,7 @@ while True:
 
     data = serversocket.recv(1024)  # receive data from client
     string = bytes.decode(data)  # decode it to string
+    request_method = []
 
     try:
         request_method = string.split(' ')[0]
