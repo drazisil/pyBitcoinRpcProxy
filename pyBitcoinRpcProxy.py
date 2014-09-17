@@ -109,6 +109,7 @@ while True:
         print('closing socket')
         clientsocket.close()
 
+    # TODO: add a proper server
     # resume server-side logic
     responsebody = '{"result":null,"error":{"code":-32700,"message":"Parse error"},"id":null}'.encode()
 
