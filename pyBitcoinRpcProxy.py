@@ -68,6 +68,7 @@ while True:
         serversocket.close()
         exit()
 
+    print('=== Server recieving from Browser ===')
     print('Got connection from', clientorigin)
 
     # determine request method  (HEAD and GET are supported)
@@ -108,3 +109,4 @@ while True:
 
     # Session done
     print("Connection closed")
+    print("---------------------------------------------------")

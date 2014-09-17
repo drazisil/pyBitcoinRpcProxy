@@ -13,6 +13,7 @@ def proxyclient(bitcoinrpc_port, bitcoinrpc_username, bitcoinrpc_password, reque
 
     # Connect the socket to the port where the server is listening
     server_address = ('localhost', bitcoinrpc_port)
+    print('=== Client connecting to Bitcoin ===')
     print('connecting to ', server_address[0], 'port', server_address[1])
     clientsocket.connect(server_address)
 
