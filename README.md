@@ -1,7 +1,7 @@
 pyBitcoinRpcProxy
 =================
 
-A small python script to serv as a CORS proxy between Bitcon's RPC server and the web.
+A small python script to serve as a CORS proxy between Bitcon's RPC server and the web.
 
 I created this because I didn't want to have to worry about node.js or another web server when testing/developing on my local machine.
 
