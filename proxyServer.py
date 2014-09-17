@@ -76,7 +76,7 @@ def proxyserver(bitcoinrpc_webport, bitcoinrpc_port, bitcoinrpc_username, bitcoi
         responsestring += "Server: pyBitcoinRpcProxy\r\n"
         responsestring += "Connection: close\r\n"
         responsestring += "\r\n"
-        responsestring += requestbody
+        responsestring += str(responsebody)
 
         # send response
         serversocket.send(responsestring.encode())
