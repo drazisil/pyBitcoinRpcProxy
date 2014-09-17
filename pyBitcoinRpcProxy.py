@@ -1,6 +1,7 @@
 import base64
 import time
 import socket  # Import socket module
+from email.parser import Parser
 
 import argumentParser
 
@@ -42,10 +43,16 @@ while True:
     data = serversocket.recv(1024)  # receive data from client
     string = bytes.decode(data)  # decode it to string
 
-    # TODO correctly parse the headers to locate origin
     try:
+        request_method = string.split(' ')[0]
+        # TODO: extract the request body
         headerlines = string.split("\r\n")
-        clientorigin = headerlines[5].split(' ')[1]
+        del headerlines[0]
+        headers = Parser().parsestr("\r\n".join(headerlines))
+        # print('Header count:', len(headers))
+        print('All Headers:', headers.keys())
+        clientorigin = headers['Origin']
+
     except IndexError:
         # TODO: check if this is a Keep-Alive behavior
         # close the connection
@@ -55,7 +62,6 @@ while True:
     print('Got connection from', clientorigin)
 
     # determine request method  (HEAD and GET are supported)
-    request_method = string.split(' ')[0]
     print("Method: ", request_method)
     print("Request body: ", string)
 
@@ -111,7 +117,7 @@ while True:
     serversocket.send(responseheader_statusline)
 
     # send Access header allowing for CORS
-    responseheader_accesscontrolalloworigin = str.encode("Access-Control-Allow-Origin: " + clientorigin + "\r\n")
+    responseheader_accesscontrolalloworigin = str.encode("Access-Control-Allow-Origin: " + str(clientorigin) + "\r\n")
     serversocket.send(responseheader_accesscontrolalloworigin)
 
     # send Access-Control-Allow-Credentials header to allow login
