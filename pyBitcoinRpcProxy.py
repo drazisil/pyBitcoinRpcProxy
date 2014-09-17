@@ -1,9 +1,10 @@
-import base64
 import time
 import socket  # Import socket module
 from email.parser import Parser
 
 import argumentParser
+
+import proxyClient
 
 
 __author__ = "Joseph W Becher"
@@ -41,18 +42,25 @@ while True:
     serversocket, addr = s.accept()  # Establish connection with client.
 
     data = serversocket.recv(1024)  # receive data from client
-    string = bytes.decode(data)  # decode it to string
+    rawdataserver = bytes.decode(data)  # decode it to string
     request_method = []
 
     try:
-        request_method = string.split(' ')[0]
+        request_method = rawdataserver.split(' ')[0]
         # TODO: extract the request body
-        headerlines = string.split("\r\n")
+
+        # remove the request line from the data
+        headerlines = rawdataserver.split("\r\n")
         del headerlines[0]
-        headers = Parser().parsestr("\r\n".join(headerlines))
+
+        # parse the data into an email.message object
+        requestdata = Parser().parsestr("\r\n".join(headerlines))
+
         # print('Header count:', len(headers))
-        print('All Headers:', headers.keys())
-        clientorigin = headers['Origin']
+        # print('All Headers:', requestdata.keys())
+
+        # set the origin host for use with CORS later
+        clientorigin = requestdata['Origin']
 
     except IndexError:
         # TODO: check if this is a Keep-Alive behavior
@@ -64,89 +72,33 @@ while True:
 
     # determine request method  (HEAD and GET are supported)
     print("Method: ", request_method)
-    print("Request body: ", string)
 
-    # Create a TCP/IP socket
-    clientsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    mail = requestdata.get_payload()
+    requestbody = mail
 
-    # Connect the socket to the port where the server is listening
-    server_address = ('localhost', bitcoinrpc_port)
-    print('connecting to ', server_address[0], 'port', server_address[1])
-    clientsocket.connect(server_address)
+    print("Request body: ", requestbody)
 
-    try:
+    # call the client
+    responsebody = proxyClient.proxyclient(bitcoinrpc_port, bitcoinrpc_username, bitcoinrpc_password, requestbody)
 
-        # Send data
-        requestheader_requestline = "GET / HTTP/1.1\r\n".encode()
-        print(requestheader_requestline)
-        clientsocket.send(requestheader_requestline)
-
-        # send host
-        requestheader_host = "Host: localhost:8332\r\n".encode()
-        print(requestheader_host)
-        clientsocket.send(requestheader_host)
-
-        # send authorization line
-        username = bitcoinrpc_username.encode()
-        password = bitcoinrpc_password.encode()
-        base64string = base64.encodebytes((username + ':'.encode() + password)).decode()
-        authline = 'Authorization: Basic ' + base64string + "\r\n"
-        requestheader_authorization = str.encode(authline)
-        print(requestheader_authorization)
-        clientsocket.send(requestheader_authorization)
-
-        # send newline preceding response message body
-        clientsocket.send('\r\n'.encode())  # to separate headers from body
-
-        data = clientsocket.recv(1024)  # receive data from client
-        string = bytes.decode(data)  # decode it to string
-
-        # determine request method  (HEAD and GET are supported)
-        request_method = string.split(' ')[0]
-        print("Method: ", request_method)
-        print("Request body: ", string)
-
-    finally:
-        print('closing socket')
-        clientsocket.close()
-
-    # TODO: add a proper server
     # resume server-side logic
-    responsebody = '{"result":null,"error":{"code":-32700,"message":"Parse error"},"id":null}'.encode()
 
-    # Reply as HTTP/1.1 server, saying "HTTP OK" (code 200).
-    responseheader_statusline = "HTTP/1.1 200 OK\r\n".encode()
-    serversocket.send(responseheader_statusline)
+    # TODO: create a cleaner server
 
-    # send Access header allowing for CORS
-    responseheader_accesscontrolalloworigin = str.encode("Access-Control-Allow-Origin: " + str(clientorigin) + "\r\n")
-    serversocket.send(responseheader_accesscontrolalloworigin)
+    # assemble the response
+    responsestring = ''
+    responsestring += "HTTP/1.1 200 OK\r\n"
+    responsestring += "Access-Control-Allow-Origin: " + str(clientorigin) + "\r\n"
+    responsestring += "Access-Control-Allow-Credentials: true\r\n"
+    responsestring += "Content-Type: text/plain; encoding=utf8\r\n"
+    responsestring += "Content-Length: " + str(len(responsebody))
+    responsestring += "Server: pyBitcoinRpcProxy\r\n"
+    responsestring += "Connection: close\r\n"
+    responsestring += "\r\n"
+    responsestring += requestbody
 
-    # send Access-Control-Allow-Credentials header to allow login
-    responseheader_accessallowcredentials = "Access-Control-Allow-Credentials: true\r\n".encode()
-    serversocket.send(responseheader_accessallowcredentials)
-
-    # send Content-Type
-    responseheader_contenttype = "Content-Type: text/plain; encoding=utf8\r\n".encode()
-    serversocket.send(responseheader_contenttype)
-
-    # send Content-Length
-    responseheader_contentlength = str.encode("Content-Length: " + str(len(responsebody)) + "\r\n")
-    serversocket.send(responseheader_contentlength)
-
-    # send server name
-    responseheader_server = "Server: pyBitcoinRpcProxy\r\n".encode()
-    serversocket.send(responseheader_server)
-
-    # send connection close
-    responseheader_connectionclose = "Connection: close\r\n".encode()
-    serversocket.send(responseheader_connectionclose)
-
-    # send newline preceding response message body
-    serversocket.send('\r\n'.encode())  # to separate headers from body
-
-    # send response message body
-    serversocket.send(responsebody)
+    # send response
+    serversocket.send(responsestring.encode())
 
     # sleep to allow client to receive all data
     time.sleep(0.5)
