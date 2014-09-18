@@ -19,16 +19,14 @@ def proxyserver(bitcoinrpc_webport, bitcoinrpc_port, bitcoinrpc_username, bitcoi
 
     while True:
         s.listen(5)  # Now wait for client connection.
+        requestdata = []
+        clientorigin = ''
         serversocket, addr = s.accept()  # Establish connection with client.
 
         data = serversocket.recv(1024)  # receive data from client
         rawdataserver = bytes.decode(data)  # decode it to string
-        request_method = []
 
         try:
-            request_method = rawdataserver.split(' ')[0]
-            # TODO: extract the request body
-
             # remove the request line from the data
             headerlines = rawdataserver.split("\r\n")
             del headerlines[0]
@@ -36,35 +34,20 @@ def proxyserver(bitcoinrpc_webport, bitcoinrpc_port, bitcoinrpc_username, bitcoi
             # parse the data into an email.message object
             requestdata = Parser().parsestr("\r\n".join(headerlines))
 
-            # print('Header count:', len(headers))
-            # print('All Headers:', requestdata.keys())
-
             # set the origin host for use with CORS later
             clientorigin = requestdata['Origin']
 
         except IndexError:
-            # TODO: check if this is a Keep-Alive behavior
             # close the connection
             serversocket.close()
             exit()
 
-        print('=== Server recieving from Browser ===')
-        print('Got connection from', clientorigin)
-
-        # determine request method  (HEAD and GET are supported)
-        print("Method: ", request_method)
-
+        # get the request body from the browser
         mail = requestdata.get_payload()
         requestbody = mail
 
-        print("Request body: ", requestbody)
-
         # call the client
         responsebody = proxyClient.proxyclient(bitcoinrpc_port, bitcoinrpc_username, bitcoinrpc_password, requestbody)
-
-        # resume server-side logic
-
-        # TODO: create a cleaner server
 
         # assemble the response
         responsestring = ''
@@ -86,7 +69,3 @@ def proxyserver(bitcoinrpc_webport, bitcoinrpc_port, bitcoinrpc_username, bitcoi
 
         # close the connection
         serversocket.close()
-
-        # Session done
-        print("Connection closed")
-        print("---------------------------------------------------")

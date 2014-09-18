@@ -13,8 +13,6 @@ def proxyclient(bitcoinrpc_port, bitcoinrpc_username, bitcoinrpc_password, reque
 
     # Connect the socket to the port where the server is listening
     server_address = ('localhost', bitcoinrpc_port)
-    print('=== Client connecting to Bitcoin ===')
-    print('connecting to ', server_address[0], 'port', server_address[1])
     clientsocket.connect(server_address)
 
     try:
@@ -28,22 +26,17 @@ def proxyclient(bitcoinrpc_port, bitcoinrpc_username, bitcoinrpc_password, reque
         username = bitcoinrpc_username.encode()
         password = bitcoinrpc_password.encode()
         base64string = base64.encodebytes((username + ':'.encode() + password)).decode()
-        authline = 'Authorization: Basic ' + base64string + "\r\n"
+        authline = 'Authorization: Basic ' + base64string
         requeststring += authline
-        # requeststring += '\r\n'
+        requeststring += "Content-Length: " + str(len(requestbody)) + "\r\n"
+        requeststring += '\r\n'
         requeststring += requestbody
 
-        # send request
-        print('Full request')
-        print(requeststring)
+        # send the request to the bitcoin server
         clientsocket.send(requeststring.encode())
 
         data = clientsocket.recv(1024)  # receive data from client
         rawdataclient = bytes.decode(data)  # decode it to string
-
-        # print full response
-        print("Full response")
-        print(rawdataclient)
 
         # remove the status line from the data
         tmp2 = rawdataclient.split("\r\n")
@@ -53,19 +46,9 @@ def proxyclient(bitcoinrpc_port, bitcoinrpc_username, bitcoinrpc_password, reque
         responsedata = Parser().parsestr("\r\n".join(tmp2))
 
         mail2 = responsedata.get_payload()
-        responsebody = mail2.encode()
-
-        print("Response body: ", responsebody)
-
-        # determine request method  (HEAD and GET are supported)
-        #request_method = rawdataclient.split(' ')[0]
-        #print("Method: ", request_method)
-        #print("Request body: ", rawdataclient)
+        responsebody = mail2
 
     finally:
-        print('closing socket')
         clientsocket.close()
-
-        # TODO: add a proper server
 
     return responsebody
