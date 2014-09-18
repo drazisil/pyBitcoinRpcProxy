@@ -7,7 +7,7 @@ __author__ = "Joseph W Becher"
 __copyright__ = "Copyright 2014, Joseph W Becher"
 __credits__ = [""]
 __license__ = "GPL"
-__version__ = "0.5"
+__version__ = "1.0"
 __email__ = "jwbecher@gmail.com"
 __status__ = "Development"
 

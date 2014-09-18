@@ -5,7 +5,7 @@ A small python script to serve as a CORS proxy between Bitcon's RPC server and t
 
 I created this because I didn't want to have to worry about node.js or another web server when testing/developing on my local machine.
 
-Not working yet, but I wanted to toss it up anyway.
+Username and password are not actually optional, they just display that way for some reason.
 
     usage: pyBitcoinRpcProxy.py [-h] --username USERNAME --password PASSWORD
                                 [--port] [--webport]
