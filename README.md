@@ -7,12 +7,13 @@ I created this because I didn't want to have to worry about node.js or another w
 
 Username and password are not actually optional, they just display that way for some reason.
 
-    usage: pyBitcoinRpcProxy.py [-h] --username USERNAME --password PASSWORD
-                                [--port] [--webport]
+    usage: pyBitcoinRpcProxy.py [-h] [--webport WEB_PORT] path
+
+    positional arguments:
+      path                specify a configuration file
 
     optional arguments:
-      -h, --help           show this help message and exit
-      --username USERNAME  Bitcoin RPC username
-      --password PASSWORD  Bitcoin RPC password
-      --port               Bitcoin RPC port (8332)
-      --webport            Proxy web port (8330)
+      -h, --help          show this help message and exit
+      --webport WEB_PORT  Proxy web port (8330)
+
+
