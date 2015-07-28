@@ -1,4 +1,4 @@
-import argumentParser
+from modules.config import Config
 
 import proxyServer
 
@@ -11,18 +11,11 @@ __version__ = "1.0"
 __email__ = "jwbecher@gmail.com"
 __status__ = "Development"
 
-parser = argumentParser.ArgumentParser()
+config = Config()
 
-parser.add_argument("--username", help="Bitcoin RPC username", required=True, nargs=1, action="store")
-parser.add_argument("--password", help="Bitcoin RPC password", required=True, nargs=1, action="store")
-parser.add_argument("--port", help="Bitcoin RPC port (8332)", default=8332, action="store_true")
-parser.add_argument("--webport", help="Proxy web port (8330)", default=8330, action="store_true")
-
-args = parser.parse_args()
-
-bitcoinrpc_port = args.port
-bitcoinrpc_webport = args.webport
-bitcoinrpc_username = args.username[0]
-bitcoinrpc_password = args.password[0]
+bitcoinrpc_port = '8332'
+bitcoinrpc_webport = config.web_port
+bitcoinrpc_username = config.username
+bitcoinrpc_password = config.password
 
 proxyServer.proxyserver(bitcoinrpc_webport, bitcoinrpc_port, bitcoinrpc_username, bitcoinrpc_password)
